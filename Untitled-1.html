@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>رستوران</title>
+</head>
+<body>
+
+<h1>رستوران</h1>
+
+<button onclick="showFoodMenu()">سفارش غذا</button>
+<button onclick="showChefSuggestion()">پیشنهاد سر آشپز</button>
+
+<script>
+    function showFoodMenu() {
+        fetch('food_menu.xlsx') // فایل food_menu.xlsx را دریافت می‌کنیم
+            .then(response => response.blob())
+            .then(blob => {
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'food_menu.xlsx';
+                document.body.appendChild(a);
+                a.click();
+                window.URL.revokeObjectURL(url);
+            });
+    }
+
+    function showChefSuggestion() {
+        fetch('food_menu.xlsx') // فایل food_menu.xlsx را دریافت می‌کنیم
+            .then(response => response.blob())
+            .then(blob => {
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'food_menu.xlsx';
+                document.body.appendChild(a);
+                a.click();
+                window.URL.revokeObjectURL(url);
+            });
+
+        alert('پیشنهاد سر آشپز: برای مشاهده لیست به فایل دانلود شده نگاه کنید.');
+    </script>
+
+</body>
+</html>
