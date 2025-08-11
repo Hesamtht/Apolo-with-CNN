@@ -1,8 +1,9 @@
 from django.urls import path
-from . import views
+from .views import *
 
-app_name = 'cart'
+app_name = 'club'
+
 
 urlpatterns = [
-    ##
+    path('' , user_sub , name = 'subscription'),
 ]
