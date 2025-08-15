@@ -1,0 +1,137 @@
+body{
+    margin: 0;
+    padding: 0;
+    height: 650px;
+    font-family: 'Roboto', sans-serif;
+}
+#container{
+    background-image: linear-gradient(to top right, #353749 0%, #F7A0D9 100%);
+    width: 100%;
+    height: 650px;
+    position: relative;
+    top: -30px;
+}
+#pricecontainer{
+    width: 70%;
+    height: 500px;
+    background: linear-gradient(to bottom left, #33ccff 0%, #009933 100%);
+    position: relative;
+    top: 75px;
+    left: 15%;
+    border-radius: 10px;
+    box-shadow: 0 0 35px brown;
+}
+#txt1{
+    text-align: center;
+    font-size: 30px;
+    position: relative;
+    top: 20px;
+}
+.parts{
+    width:25%;
+    height: 340px;
+    background-color: white;
+    display: inline-block;
+    position: relative;
+    left: 12.5%;
+    top: 30px;
+    border-radius: 8px;
+    margin-bottom:20px;
+}
+.parts:hover{
+    transform: scale(1.2,1.2);
+    transition: 1s;
+    box-shadow: 0 0 35px black;
+    z-index: 99;
+}
+#part1{
+    background: linear-gradient(to bottom right, darkblue 0%, #ff33cc 100%);
+}
+#part2{
+    background: linear-gradient(to bottom right, gray 0%, #663300 100%);
+}
+#part3{
+    background: linear-gradient(to bottom right, crimson 0%, #660066 100%);
+}
+.title{
+    text-align: center;
+    font-size: 25px;
+    color: white;
+    position:relative;
+    top:20px;
+}
+.hrline{
+    width: 20px;
+    color: white;
+    border : 3px solid white;
+    border-radius: 4px;
+    position: relative;
+    top: 15px;
+}
+.storage, .user, .site{
+    font-size: 20px;
+    text-align: center;
+    color: white;
+    position:relative;
+    top:20px;
+}
+.user{
+    color: darkgray;
+}
+.price{
+    font-size: 25px;
+    text-align: center;
+    position:relative;
+    top:20px;
+}
+.buy{
+    width: 70%;
+    font-size: 20px;
+    height: 50px;
+    position: relative;
+    left: 15%;
+    top: 45px;
+    border-radius: 28px;
+    border: none;
+    background-color: white;
+    cursor: pointer;
+}
+.buy:hover{
+    background-color: cadetblue;
+    color: white;
+    transition: 1s;
+    box-shadow: 0 0 15px black;
+}
+.fa-arrow-circle-right{
+    margin-left: 5px;
+}
+@media only screen and (max-width:980px){
+    .price{
+        font-size: 20px;
+    }
+    .buy{
+        font-size: 15px;
+        position: relative;
+        top: 15px;
+    }
+    .parts{
+        height: 300px;
+    }
+}
+@media only screen and (max-width:790px){
+    .parts{
+        display: inherit;
+        width: 75%;
+        height: 350px;
+    }
+    .title{
+        position: relative;
+        top: 10px;
+    }
+    #container{
+        height: 1380px;
+    }
+    #pricecontainer{
+        height: 1250px;
+    }
+}
