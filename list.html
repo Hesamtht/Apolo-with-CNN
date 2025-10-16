@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="fa">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>منو رستوران</title>
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+  <link rel="stylesheet" href="{% static 'css/list.css' %}">
+  <style>
+    body {
+      background-image: url('{% static 'images/menu_image.jpg' %}');
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
+    }
+    #virtual-cursor {
+      position: fixed;
+      width: 20px;
+      height: 20px;
+      background-color: red;
+      border-radius: 50%;
+      pointer-events: none;
+      z-index: 9999;
+    }
+    #video-container {
+      position: relative;
+      width: 320px;  /* Adjust the width */
+      height: 240px; /* Adjust the height */
+      margin: 10px auto;
+    }
+    #video, #outputCanvas {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+    }
+  </style>
+</head>
+<body dir="rtl">
+  <div class="container mt-5">
+    <h1 class="menu-title text-center">منو رستوران</h1>
+    <div class="row">
+      {% for category, foods in foods_by_category.items %}
+        <div class="col-md-6 mb-5">
+          <h2 class="category-title">{{ category }}</h2>
+          <ul class="list-group list-group-flush">
+            {% for food in foods %}
+              <li class="menu-item d-flex align-items-center" id="food_{{ food.id }}">
+                <a href="{{ food.get_absolute_url }}" class="w-100">
+                  <img src="{{ food.photo.url }}" alt="{{ food.name }}" class="mr-3" style="width: 100px; height: 100px;">
+                  <div class="food-details">
+                    <h3>{{ food.name }}</h3>
+                    <p class="text-muted">{{ food.description }}</p>
+                    <p>قیمت: {{ food.price }}</p>
+                    <button class="btn btn-primary btn-sm add-to-cart-btn" data-food-id="{{ food.id }}">اضافه به سبد خرید</button>
+                  </div>
+                </a>
+              </li>
+            {% endfor %}
+          </ul>
+        </div>
+      {% endfor %}
+    </div>
+  </div>
+
+  <!-- Cart Icon -->
+  <div class="cart-icon">
+    <a href="{% url 'menu:list' %}">
+      <img src="{% static 'images/cart-icon.png' %}" alt="Cart">
+      <span class="badge badge-pill badge-primary">{{ request.user.cart.items.count }}</span>
+    </a>
+  </div>
+
+  <div id="video-container">
+    <video id="video" autoplay></video>
+    <canvas id="outputCanvas"></canvas>
+  </div>
+  <div id="virtual-cursor"></div>
+
+  <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js"></script>
+  <script>
+    const videoElement = document.getElementById('video');
+    const outputCanvas = document.getElementById('outputCanvas');
+    const virtualCursor = document.getElementById('virtual-cursor');
+    const canvasCtx = outputCanvas.getContext('2d');
+
+    const hands = new Hands({
+      locateFile: (file) => {
+        return `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`;
+      }
+    });
+
+    hands.setOptions({
+      maxNumHands: 1,  // Only track one hand
+      modelComplexity: 1,
+      minDetectionConfidence: 0.5,
+      minTrackingConfidence: 0.5
+    });
+
+    hands.onResults(onResults);
+
+    const camera = new Camera(videoElement, {
+      onFrame: async () => {
+        await hands.send({image: videoElement});
+      },
+      width: 640,
+      height: 480
+    });
+    camera.start();
+
+    function onResults(results) {
+      // Clear the canvas
+      canvasCtx.save();
+      canvasCtx.clearRect(0, 0, outputCanvas.width, outputCanvas.height);
+      // Draw the flipped video
+      canvasCtx.translate(outputCanvas.width, 0);
+      canvasCtx.scale(-1, 1);
+      canvasCtx.drawImage(
+        results.image, 0, 0, outputCanvas.width, outputCanvas.height);
+      canvasCtx.restore();
+
+      if (results.multiHandLandmarks && results.multiHandLandmarks.length > 0) {
+        const landmarks = results.multiHandLandmarks[0];
+
+        const indexFingerTip = landmarks[8];
+        const x = (1 - indexFingerTip.x) * window.innerWidth;
+        const y = indexFingerTip.y * window.innerHeight;
+
+        virtualCursor.style.left = `${x}px`;
+        virtualCursor.style.top = `${y}px`;
+
+        // Detect if the hand is in a fist (punch gesture)
+        const thumbTip = landmarks[4];
+        const distanceToThumb = Math.hypot(
+          (indexFingerTip.x - thumbTip.x) * window.innerWidth,
+          (indexFingerTip.y - thumbTip.y) * window.innerHeight
+        );
+
+        if (distanceToThumb < 50) {  // Adjust the threshold as needed
+          simulateClick(x, y);
+        }
+
+        // Partition the screen and add scrolling behavior
+        const upperBoundary = window.innerHeight * 0.25;
+        const lowerBoundary = window.innerHeight * 0.75;
+
+        if (y < upperBoundary) {
+          // Scroll up when the cursor is in the top quarter
+          window.scrollBy(0, -30);  // Increased scrolling speed
+        } else if (y > lowerBoundary) {
+          // Scroll down when the cursor is in the bottom quarter
+          window.scrollBy(0, 30);  // Increased scrolling speed
+        }
+      }
+
+      canvasCtx.restore();
+    }
+
+    function simulateClick(x, y) {
+      const element = document.elementFromPoint(x, y);
+      if (element) {
+        element.click();
+      }
+    }
+
+    $(document).ready(function() {
+      $('.add-to-cart-btn').click(function() {
+        var foodId = $(this).data('food-id');
+        $.ajax({
+          type: 'POST',
+          url: '{% url "menu:add_to_cart" %}',
+          data: {
+            'food_id': foodId,
+            'csrfmiddlewaretoken': '{{ csrf_token }}'
+          },
+          dataType: 'json',
+          success: function(response) {
+            if (response.success) {
+              alert('Food added to cart!');
+              var count = parseInt($('.badge').text());
+              $('.badge').text(count + 1);
+            } else {
+              alert('Failed to add food to cart!');
+            }
+          },
+          error: function(xhr, status, error) {
+            console.error(xhr.responseText);
+          }
+        });
+      });
+    });
+  </script>
+</body>
+</html>
