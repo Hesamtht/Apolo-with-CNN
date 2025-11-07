@@ -1,83 +1,60 @@
-from django.shortcuts import render, get_object_or_404
-from django.http import StreamingHttpResponse, JsonResponse
-from django.contrib.auth.decorators import login_required
-from .models import Food, Cart, CartItem
-import cv2
-import mediapipe as mp
-import pyautogui
+from django.shortcuts import render , redirect , get_object_or_404
+from django.contrib import messages
+from django.contrib.auth.models import User
+from django.contrib.auth import login , authenticate , logout
+from menu.views import food_detail
 
-# Hand tracking setup
-capture_hands = mp.solutions.hands.Hands()
-drawing_option = mp.solutions.drawing_utils
-screen_width, screen_height = pyautogui.size()
+def register(request):
 
-def gen_frames():
-    camera = cv2.VideoCapture(0)
-    x1 = y1 = x2 = y2 = 0
-
-    while True:
-        success, image = camera.read()
-        if not success:
-            break
-        else:
-            image_height, image_width, _ = image.shape
-            image = cv2.flip(image, 1)
-            rgb_image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-            output_hands = capture_hands.process(rgb_image)
-            all_hands = output_hands.multi_hand_landmarks
-
-            if all_hands:
-                for hand in all_hands:
-                    drawing_option.draw_landmarks(image, hand)
-                    one_hand_landmarks = hand.landmark
-                    for id, lm in enumerate(one_hand_landmarks):
-                        x = int(lm.x * image_width)
-                        y = int(lm.y * image_height)
-                        if id == 8:
-                            mouse_x = int(screen_width / image_width * x)
-                            mouse_y = int(screen_height / image_height * y)
-                            cv2.circle(image, (x, y), 10, (0, 255, 255), -1)
-                            pyautogui.moveTo(mouse_x, mouse_y)
-                            x1 = x
-                            y1 = y
-                        if id == 4:
-                            x2 = x
-                            y2 = y
-                            cv2.circle(image, (x, y), 10, (0, 255, 255), -1)
-                dist = y2 - y1
-                if dist < 20:
-                    pyautogui.click()
-
-            ret, buffer = cv2.imencode('.jpg', image)
-            frame = buffer.tobytes()
-            yield (b'--frame\r\n'
-                   b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n')
-
-    camera.release()
-    cv2.destroyAllWindows()
-
-def video_feed(request):
-    return StreamingHttpResponse(gen_frames(), content_type='multipart/x-mixed-replace; boundary=frame')
-
-def food_list(request):
-    foods = Food.objects.all()
-    foods_by_category = {}
-    for category, _ in Food.CATEGORIES:
-        foods_by_category[category] = foods.filter(category=category)
-    return render(request, 'list.html', {'foods_by_category': foods_by_category})
-
-def food_detail(request, slug):
-    food_detail = get_object_or_404(Food, slug=slug)
-    context = {
-        "food_detail": food_detail
-    }
-    return render(request, 'detail.html', context)
-
-def add_to_cart(request):
     if request.method == 'POST':
-        food_id = request.POST.get('food_id')
-        food = get_object_or_404(Food, pk=food_id)
-        # Add item to cart logic here
-        return JsonResponse({'success': True})
+        name = request.POST.get('name')
+        email = request.POST.get('email')
+        password = request.POST.get('password')
+        confirm_password = request.POST.get('confirm_password')
+
+        if password != confirm_password:
+            messages.error(request , 'Password and Confirm Password do not match')
+            return redirect('profiles')
+
+        # Check if email is already registered
+        if User.objects.filter(email = email).exists():
+            messages.error(request , 'This email is already registered')
+            return redirect('profiles')
+
+        # Create the user
+        user = User.objects.create_user(username = email, email = email, password = password)
+        user.first_name = name
+        user.save()
+        messages.success(request , 'Registration successful')
+        return redirect('home:home')
+
+        # Optionally, you may want to log in the user automatically after registration
+        user = authenticate(request , username = email , password = password)
+        if user is not None:
+            login(request , user)
+            return redirect('home:home')
+
+    return render(request, 'register_form.html')
+
+
+def comment(request, slug):
+    food_detail = get_object_or_404(Food, slug=slug)
+    comments = Comment.objects.filter(food=food_detail, active=True)
+    new_comment = None
+
+    if request.method == 'POST':
+        commenter_name = request.POST.get('commenter_name')
+        comment_text = request.POST.get('comment_text')
+        if commenter_name and comment_text:  # You can add more validation if needed
+            new_comment = Comment.objects.create(food=food_detail, commenter_name=commenter_name, comment_text=comment_text)
+            new_comment.save()
     else:
-        return JsonResponse({'success': False})
+        comment_form = None
+
+    context = {
+        'food_detail': food_detail,
+        'comments': comments,
+        'new_comment': new_comment,
+    }
+
+    return render(request, 'menu/templates/detail.html', context)
