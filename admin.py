@@ -1,11 +1,14 @@
 from django.contrib import admin
-from .models import Food
-
-# Register your models here.
+from .models import Comment
 
 
-@admin.register(Food)
+@admin.register(Comment)
 
-class FoodAdmin(admin.ModelAdmin):
-    list_display = ('name' , 'description' , 'rate' , 'price')
-    prepopulated_fields = {'slug' : ('name',)} #auto fill slug when writing food name
+class CommentAdmin(admin.ModelAdmin):
+
+    list_display = ['name' , 'food' , 'body' , 'active']
+    list_editable = ['active',]
+    actions = ['approve_comments']
+
+    def approve_comments(self , request , queryset):
+        queryset.update(active = True)
