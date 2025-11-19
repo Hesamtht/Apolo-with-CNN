@@ -1,19 +1,14 @@
 from django.db import models
-from django.contrib.auth.models import User
-from menu.models import Food
-from django.utils.translation import gettext_lazy as _
 
+class Reservation(models.Model):
 
-
-class Comment(models.Model):
-
-    food = models.ForeignKey(Food , on_delete = models.CASCADE)
-    name = models.CharField(max_length = 35)
-    body = models.TextField(_('نظر') , blank = False, null = False)
-    date_added = models.DateTimeField(_('تاریخ اضافه شدن') , auto_now_add = True)
-    active = models.BooleanField(default = False)
+    name = models.CharField(max_length = 100)
+    email = models.EmailField(max_length = 100)
+    phone = models.CharField(max_length = 11)
+    number_of_persons = models.PositiveIntegerField()
+    time = models.TimeField()
+    date = models.DateField()
 
 
     def __str__(self):
-        return 'Comment {} by {}'.format(self.body , self.name)
-
+        return self.name
