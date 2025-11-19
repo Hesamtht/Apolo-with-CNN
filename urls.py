@@ -1,9 +1,9 @@
 from django.urls import path
 from .views import *
 
-app_name = 'profiles'
-
+app_name = 'reservation'
 
 urlpatterns = [
-    path('' , register , name = 'register'),
+    path('' , reserve_table , name = 'reserve_table'),
+    path('success/' , reservation_success , name = 'reservation_success'),
 ]
