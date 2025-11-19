@@ -1,6 +1,6 @@
 from django.apps import AppConfig
 
 
-class ProfilesConfig(AppConfig):
+class ReservationConfig(AppConfig):
     default_auto_field = 'django.db.models.BigAutoField'
-    name = 'profiles'
+    name = 'reservation'
