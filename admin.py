@@ -1,14 +1,12 @@
 from django.contrib import admin
-from .models import Comment
+from .models import Reservation
 
 
-@admin.register(Comment)
 
-class CommentAdmin(admin.ModelAdmin):
+# Register your models here.
 
-    list_display = ['name' , 'food' , 'body' , 'active']
-    list_editable = ['active',]
-    actions = ['approve_comments']
+@admin.register(Reservation)
 
-    def approve_comments(self , request , queryset):
-        queryset.update(active = True)
+class ReservationAdmin(admin.ModelAdmin):
+    list_display = ['name' , 'phone' , 'number_of_persons' , 'date']
+    list_filter = ['number_of_persons']
