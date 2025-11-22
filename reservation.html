@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+{% load static %}
+<html>
+<head>
+<title>فرم رزرو رستوران</title>
+<link rel="stylesheet" type="text/css" href="{% static 'css/reservation.css' %}">
+</head>
+<body>
+  <h1>فرم رزرو رستوران</h1>
+  <form action="{% url 'reservation:reserve_table' %}" method="post">
+    {% csrf_token %}
+    <label for="fullname">نام کامل:</label>
+    <input type="text" id="fullname" name="fullname"><br><br>
+
+    <label for="phone">شماره تلفن:</label>
+    <input type="tel" id="phone" name="phone"><br><br>
+
+    <label for="email">ایمیل:</label>
+    <input type="email" id="email" name="email"><br><br>
+
+    <label for="date">تاریخ رزرو:</label>
+    <input type="date" id="date" name="date"><br><br>
+
+    <label for="time">زمان رزرو:</label>
+    <input type="time" id="time" name="time"><br><br>
+
+    <label for="guests">تعداد مهمان‌ها:</label>
+    <input type="number" id="guests" name="guests"><br><br>
+
+    <input type="submit" value="ارسال">
+  </form>
+</body>
+</html>
