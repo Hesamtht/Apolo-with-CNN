@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>رزرو موفقیت آمیز</title>
+    <link rel="stylesheet" href="{% static 'css/success.css' %}">
+</head>
+<body>
+    <div class="container">
+        <h1>رزرو میز با موفقیت انجام شد</h1>
+        <p>منتظرتون هستیم</p>
+        <a href="{% url 'home:home' %}" class="button">برگشت به صفحه اصلی</a>
+    </div>
+</body>
+</html>
